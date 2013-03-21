@@ -2,7 +2,8 @@ from multiprocessing import Queue
 
 import time
 
-def handler(request_q, response_q):
+def handler(is_running, request_q, response_q):
+    
     requests = []
     responses = []
     
@@ -10,29 +11,34 @@ def handler(request_q, response_q):
     body += b'Content-Type: text/plain\r\nContent-Length: 13\r\n\r\n'
     body += b'Hello, world!'
     
-    while True:
-        
-        # read incoming requests
-        while True:
-            try:
-                requests.append(request_q.get(block=False))
-            except:
-                break
-        
-        # process incoming requests and generate responses
-        for x in range(10):
-            try:
-                request = requests.pop(0)
-                responses.append({ 'id': request['id'], 'raw': body })
-            except:
-                break
+    while True and is_running.value:
+        try:
+            # read incoming requests
+            while True:
+                try:
+                    raw = request_q.get(block=False)
 
-        # send responses
-        while True:
-            try:
-                response = responses.pop(0)
-                response_q.put(response)
-            except:
-                break
-        
-        time.sleep(0.001)
+                    requests.append(raw)
+                except:
+                    break
+
+            # process incoming requests and generate responses
+            for x in range(10):
+                try:
+                    request = requests.pop(0)
+                    responses.append({ 'id': request['id'], 'raw': body })
+                except:
+                    break
+
+            # send responses
+            while True:
+                try:
+                    response = responses.pop(0)
+                    response_q.put(response)
+                except:
+                    break
+
+            time.sleep(0.001)
+
+        except KeyboardInterrupt:
+            pass

@@ -1,15 +1,16 @@
 #!/usr/bin/env python
 
 import socket, select
-from multiprocessing import Process, Queue
+from multiprocessing import Process, Queue, Value
 from handler import handler
 
 if __name__ == '__main__':
-
+    
+    is_running = Value('b', 1)
     request_q = Queue()
     response_q = Queue()
     
-    request_handlers = [Process(target=handler, args=(request_q, response_q)) for x in range(10)]
+    request_handlers = [Process(target=handler, args=(is_running, request_q, response_q)) for x in range(10)]
     for x in request_handlers: x.start()
     
     # derived: http://scotdoyle.com/python-epoll-howto.html#async-examples
@@ -78,7 +79,12 @@ if __name__ == '__main__':
                     epoll.unregister(fileno)
                     connections[fileno].close()
                     del connections[fileno]
+    
     finally:
         epoll.unregister(serversocket.fileno())
         epoll.close()
         serversocket.close()
+        
+        is_running.value = 0
+        for x in request_handlers: x.join()
+
