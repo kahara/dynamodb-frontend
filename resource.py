@@ -21,7 +21,13 @@ class Resource(object):
 class UserResource(Resource):
     def handle(self):
         if not 'user' in self.connections[self.pid]['tables']:
-            print 'get_table', self.pid
             self.connections[self.pid]['tables']['user'] = self.connections[self.pid]['connection'].get_table('reader-dev-user')
+        
+        self.response = HTTPResponse(status=200, headers={'foo': 'bar', 'baz': 'quux'}, body='i am the walrus')
+
+class SessionResource(Resource):
+    def handle(self):
+        if not 'session' in self.connections[self.pid]['tables']:
+            self.connections[self.pid]['tables']['session'] = self.connections[self.pid]['connection'].get_table('reader-dev-session')
         
         self.response = HTTPResponse(status=200, headers={'foo': 'bar', 'baz': 'quux'}, body='i am the walrus')
