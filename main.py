@@ -72,8 +72,7 @@ if __name__ == '__main__':
                         pass
                     if len(responses[fileno]) == 0:
                         epoll.modify(fileno, select.EPOLLET)
-                        try: connections[fileno].shutdown(socket.SHUT_RDWR)
-                        except: pass
+                        connections[fileno].shutdown(socket.SHUT_RDWR)
                 elif event & select.EPOLLHUP:
                     epoll.unregister(fileno)
                     connections[fileno].close()
