@@ -63,8 +63,6 @@ if __name__ == '__main__':
                         pass
                     if EOL1 in requests[fileno] or EOL2 in requests[fileno]:
                         request_q.put({ 'id': fileno, 'raw': requests[fileno] })
-                        #epoll.modify(fileno, select.EPOLLOUT | select.EPOLLET)
-                        #print('-'*40 + '\n' + requests[fileno].decode()[:-2])
                 elif event & select.EPOLLOUT:
                     try:
                         while len(responses[fileno]) > 0:
@@ -74,7 +72,8 @@ if __name__ == '__main__':
                         pass
                     if len(responses[fileno]) == 0:
                         epoll.modify(fileno, select.EPOLLET)
-                        connections[fileno].shutdown(socket.SHUT_RDWR)
+                        try: connections[fileno].shutdown(socket.SHUT_RDWR)
+                        except: pass
                 elif event & select.EPOLLHUP:
                     epoll.unregister(fileno)
                     connections[fileno].close()
