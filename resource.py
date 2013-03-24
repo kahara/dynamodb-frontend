@@ -15,13 +15,16 @@ class Resource(object):
         if not self.resource_name in self.tables:
             self.tables[self.resource_name] = self.connection.get_table('reader-dev-' + self.resource_name)
         
-        getattr(self, {
-                'GET': 'do_get',
-                'POST': 'do_post',
-                'PUT': 'do_put',
-                'DELETE': 'do_delete',
-                }[self.request.method.upper()])()
-        
+        try:
+            getattr(self, {
+                    'GET': 'do_get',
+                    'POST': 'do_post',
+                    'PUT': 'do_put',
+                    'DELETE': 'do_delete',
+                    }[self.request.method.upper()])()
+        except:
+            self.response = HTTPResponse(status=405)
+
 class UserResource(Resource):
     resource_name = 'user'
     
