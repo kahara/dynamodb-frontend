@@ -5,6 +5,7 @@ class HTTPRequest(object):
         self.path = None
         self.version = None
         self.headers = {}
+        self.session_id = None
         self.body = None
         
         self.parse()
@@ -17,3 +18,8 @@ class HTTPRequest(object):
         for header in headers.split('\r\n'):
             key, value = header.split(':', 1)
             self.headers[key.strip()] = value.strip()
+        
+        if 'Cookie' in self.headers:
+            key, value = self.headers['Cookie'].split(';')[0].split('=')
+            if key == 'session_id' and value:
+                self.session_id = value
