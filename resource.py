@@ -1,7 +1,7 @@
 from response import HTTPResponse
 import boto.dynamodb
 from boto.dynamodb.condition import *
-from auth import hash, generate_key, salt_string, check_salted
+from auth import generate_key, salt_string, check_salted
 import json
 import sys, traceback
 from datetime import datetime
