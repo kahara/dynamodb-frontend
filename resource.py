@@ -5,6 +5,12 @@ import boto.dynamodb
 class Resource(object):
     connection = None
     tables = {}
+    methods = {
+        'GET': 'do_get',
+        'POST': 'do_post',
+        'PUT': 'do_put',
+        'DELETE': 'do_delete',
+        }
     
     def __init__(self, request):
         self.request = request
@@ -17,20 +23,22 @@ class Resource(object):
         if not self.resource_name in self.tables:
             self.tables[self.resource_name] = self.connection.get_table('reader-dev-' + self.resource_name)
         
-        self.handle()
-            
+        getattr(self, self.methods[self.request.method.upper()])()
+        
 class UserResource(Resource):
     resource_name = 'user'
-    def handle(self):
-        print self.pid
-        print self.connection
-        print self.tables
+    
+    def do_get(self):
         self.response = HTTPResponse(status=200, headers={'foo': 'bar', 'baz': 'quux'}, body='i am the walrus')
-
+    
+    def do_post(self):
+        self.response = HTTPResponse(status=200, headers={'foo': 'bar', 'baz': 'quux'}, body='i am the walrus')
+    
 class SessionResource(Resource):
     resource_name = 'session'
-    def handle(self):
-        print self.pid
-        print self.connection
-        print self.tables
+
+    def do_get(self):
+        self.response = HTTPResponse(status=200, headers={'foo': 'bar', 'baz': 'quux'}, body='i am the walrus')
+    
+    def do_post(self):
         self.response = HTTPResponse(status=200, headers={'foo': 'bar', 'baz': 'quux'}, body='i am the walrus')
