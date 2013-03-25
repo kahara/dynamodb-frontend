@@ -10,6 +10,9 @@ from time import mktime
 def timestamp():
     return int(mktime(datetime.utcnow().timetuple()))
 
+def cookie(session_id=''):
+    return 'session_id=%s; Path=/; Expires=Tue, 31-Dec-2019 23:59:59 GMT' % (session_id, )        
+
 class Resource(object):
     connection = None
     tables = {}
@@ -23,8 +26,8 @@ class Resource(object):
             self.connection =  boto.dynamodb.connect_to_region('eu-west-1')
         
         if not self.tables:
-            for resource_name in ['user', 'session']:
-                self.tables[resource_name] = self.connection.get_table('reader-dev-' + resource_name)
+            for table_name in ['user', 'email', 'username', 'session']:
+                self.tables[table_name] = self.connection.get_table(table_name)
         
         if self.request.session_id:
             self.session = self.tables['session'].get_item(hash_key=self.request.session_id)
@@ -65,15 +68,19 @@ class SessionResource(Resource):
         
         try:
             credentials = json.loads(self.request.body)
-            if not credentials['username'] or not credentials['password']: # malformed credential payload
+            if not credentials['login'] or not credentials['password']: # malformed credential payload
                 self.response = HTTPResponse(status=400)
                 return
         except: # malformed credential payload
             self.response = HTTPResponse(status=400)
             return
         
+        if '@' in credentials['login']: # log in with email address
+            lookup = self.tables['email'].get_item(hash_key=credentials['login'])
+        else: # log in with username
+            lookup = self.tables['username'].get_item(hash_key=credentials['login'])
+        user = self.tables['user'].get_item(hash_key=lookup['user'])
         
-        user = self.tables['user'].get_item(hash_key=credentials['username'])
         if not user: # no such user
             self.response = HTTPResponse(status=400)
             return
@@ -83,19 +90,19 @@ class SessionResource(Resource):
             return
         
         session_id = generate_key()
-        attrs = { 'user': user['id'], 'timestamp': timestamp() }
+        attrs = { 'timestamp': timestamp(), 'user': user['id'], 'email': user['email'], 'username': user['username'] }
         session = self.tables['session'].new_item(hash_key=session_id, attrs=attrs)
         session.put()
         
-        cookie = 'session_id=%s; Expires=Tue, 31-Dec-2019 23:59:59 GMT' % (session_id, )        
-        self.response = HTTPResponse(status=200, headers={'Set-Cookie': cookie })
+        self.response = HTTPResponse(status=200, headers={'Set-Cookie': cookie(session_id) })
         
     def do_delete(self):
+        print self.session
+
         if not self.session:
             self.response = HTTPResponse(status=400)
             return
-        
+                
         self.session.delete()
         
-        cookie = 'session_id=; Expires=Tue, 31-Dec-2019 23:59:59 GMT'
-        self.response = HTTPResponse(status=200, headers={'Set-Cookie': cookie })
+        self.response = HTTPResponse(status=200, headers={'Set-Cookie': cookie() })
