@@ -3,10 +3,10 @@ from datetime import datetime
 from time import mktime
 
 def generate_key():
-    return hash(uuid.uuid4().hex)
+    return hash(uuid.uuid4().hex + uuid.uuid4().hex)
 
 def hash(plaintext):
-    return base64.urlsafe_b64encode(hashlib.sha512(plaintext).digest()).strip(' =')
+    return base64.urlsafe_b64encode(hashlib.sha256(plaintext).digest()).strip(' =')
 
 def salt_string(plaintext=None):
     salt = generate_key()
