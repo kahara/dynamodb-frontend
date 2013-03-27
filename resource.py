@@ -1,7 +1,7 @@
 from response import HTTPResponse
 import boto.dynamodb
 from boto.dynamodb.condition import *
-from auth import generate_key, salt_string, check_salted
+from auth import generate_key, hash_password, check_password, cookie
 import json
 import sys, traceback
 from datetime import datetime
@@ -9,9 +9,6 @@ from time import mktime
 
 def timestamp():
     return int(mktime(datetime.utcnow().timetuple()))
-
-def cookie(session_id=''):
-    return 'session_id=%s; Path=/; Expires=Tue, 31-Dec-2019 23:59:59 GMT' % (session_id, )        
 
 class Resource(object):
     connection = None
@@ -30,8 +27,12 @@ class Resource(object):
                 self.tables[table_name] = self.connection.get_table(table_name)
         
         if self.request.session_id:
-            self.session = self.tables['session'].get_item(hash_key=self.request.session_id)
-        
+            try:
+                self.session = self.tables['session'].get_item(hash_key=self.request.session_id)
+            except:
+                self.response = HTTPResponse(status=400)
+                return
+
         try:
             getattr(self, {
                     'GET': 'do_get',
@@ -41,17 +42,17 @@ class Resource(object):
                     }[self.request.method.upper()])()
         except:
             exc_type, exc_value, exc_traceback = sys.exc_info()
-            print traceback.format_exception(exc_type, exc_value, exc_traceback)
-            
+            print traceback.format_exception(exc_type, exc_value, exc_traceback)            
             self.response = HTTPResponse(status=405)
+            return
 
 class UserResource(Resource):
     resource_name = 'user'
     
-    def do_get(self):        
+    def do_get(self):
         self.response = HTTPResponse(status=200, headers={'foo': 'bar', 'baz': 'quux'}, body='GET user')
     
-    def do_post(self):
+    def do_put(self):
         self.response = HTTPResponse(status=200, headers={'foo': 'bar', 'baz': 'quux'}, body='POST user')
     
 class SessionResource(Resource):
@@ -85,7 +86,7 @@ class SessionResource(Resource):
             self.response = HTTPResponse(status=400)
             return
         
-        if not check_salted(credentials['password'], user['password']): # incorrect password
+        if not check_password(credentials['password'], user['password']): # incorrect password
             self.response = HTTPResponse(status=401)
             return
         
