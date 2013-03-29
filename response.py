@@ -1,6 +1,6 @@
 class Response(object):
     statuses = {
-        'default': '400 Bad Request',
+        'default': '500 Internal Server Error',
         200: '200 OK',
         400: '400 Bad Request',
         401: '401 Unauthorized',
