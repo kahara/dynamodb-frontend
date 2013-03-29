@@ -41,8 +41,8 @@ class Resource(object):
                     'DELETE': 'do_delete',
                     }[self.request.method.upper()])()
         except:
-            exc_type, exc_value, exc_traceback = sys.exc_info()
-            print traceback.format_exception(exc_type, exc_value, exc_traceback)            
+            #exc_type, exc_value, exc_traceback = sys.exc_info()
+            #print traceback.format_exception(exc_type, exc_value, exc_traceback)            
             self.response = Response(status=405)
             return
 
