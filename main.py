@@ -59,6 +59,7 @@ if __name__ == '__main__':
                     try:
                         while True:
                             requests[fileno] += connections[fileno].recv(1024)
+                            # XXX handle over-sized requests
                     except socket.error:
                         pass
                     if EOL1 in requests[fileno] or EOL2 in requests[fileno]:
