@@ -59,9 +59,17 @@ class SessionResource(Resource):
     resource_name = 'session'
     
     def do_get(self):
-        print self.session
-        self.response = Response(status=200, headers={'foo': 'bar', 'baz': 'quux'}, body='GET session')
-    
+        try:
+            if self.session:
+                self.response = Response(status=200, body=json.dumps({'username': self.session['username'], 'email': self.session['email'] }))
+                return
+            else:
+                self.response = Response(status=400)
+                return
+        except:
+            self.response = Response(status=400)
+            return
+
     def do_post(self): # log in user
         if self.session: # user already logged in
             self.response = Response(status=400)
