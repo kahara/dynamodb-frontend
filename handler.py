@@ -1,12 +1,8 @@
 from multiprocessing import Queue, current_process
-from request import HTTPRequest
+from request import Request
 from resource import UserResource, SessionResource
 
 def handler(is_running, request_q, response_q):
-    
-    body  = b'HTTP/1.0 200 OK\r\nDate: Mon, 1 Jan 1996 01:01:01 GMT\r\n'
-    body += b'Content-Type: text/plain\r\nContent-Length: 13\r\n\r\n'
-    body += b'Hello, world!'
     
     resource_map = {
         'user': UserResource,
@@ -22,7 +18,7 @@ def handler(is_running, request_q, response_q):
                 continue
             
             # process incoming request and generate response
-            http_request = HTTPRequest(request['raw'])
+            http_request = Request(request['raw'])
             resource = resource_map[http_request.path[0]](http_request)
             response = resource.response.raw()
             

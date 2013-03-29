@@ -1,4 +1,4 @@
-from response import HTTPResponse
+from response import Response
 import boto.dynamodb
 from boto.dynamodb.condition import *
 from auth import generate_key, hash_password, check_password, cookie
@@ -30,7 +30,7 @@ class Resource(object):
             try:
                 self.session = self.tables['session'].get_item(hash_key=self.request.session_id)
             except:
-                self.response = HTTPResponse(status=400)
+                self.response = Response(status=400)
                 return
 
         try:
@@ -43,37 +43,37 @@ class Resource(object):
         except:
             exc_type, exc_value, exc_traceback = sys.exc_info()
             print traceback.format_exception(exc_type, exc_value, exc_traceback)            
-            self.response = HTTPResponse(status=405)
+            self.response = Response(status=405)
             return
 
 class UserResource(Resource):
     resource_name = 'user'
     
     def do_get(self):
-        self.response = HTTPResponse(status=200, headers={'foo': 'bar', 'baz': 'quux'}, body='GET user')
+        self.response = Response(status=200, headers={'foo': 'bar', 'baz': 'quux'}, body='GET user')
     
     def do_put(self):
-        self.response = HTTPResponse(status=200, headers={'foo': 'bar', 'baz': 'quux'}, body='POST user')
+        self.response = Response(status=200, headers={'foo': 'bar', 'baz': 'quux'}, body='POST user')
     
 class SessionResource(Resource):
     resource_name = 'session'
     
     def do_get(self):
         print self.session
-        self.response = HTTPResponse(status=200, headers={'foo': 'bar', 'baz': 'quux'}, body='GET session')
+        self.response = Response(status=200, headers={'foo': 'bar', 'baz': 'quux'}, body='GET session')
     
     def do_post(self): # log in user
         if self.session: # user already logged in
-            self.response = HTTPResponse(status=400)
+            self.response = Response(status=400)
             return
         
         try:
             credentials = json.loads(self.request.body)
             if not credentials['login'] or not credentials['password']: # malformed credential payload
-                self.response = HTTPResponse(status=400)
+                self.response = Response(status=400)
                 return
         except: # malformed credential payload
-            self.response = HTTPResponse(status=400)
+            self.response = Response(status=400)
             return
         
         if '@' in credentials['login']: # log in with email address
@@ -83,11 +83,11 @@ class SessionResource(Resource):
         user = self.tables['user'].get_item(hash_key=lookup['user'])
         
         if not user: # no such user
-            self.response = HTTPResponse(status=400)
+            self.response = Response(status=400)
             return
         
         if not check_password(credentials['password'], user['password']): # incorrect password
-            self.response = HTTPResponse(status=401)
+            self.response = Response(status=401)
             return
         
         session_id = generate_key()
@@ -95,15 +95,15 @@ class SessionResource(Resource):
         session = self.tables['session'].new_item(hash_key=session_id, attrs=attrs)
         session.put()
         
-        self.response = HTTPResponse(status=200, headers={'Set-Cookie': cookie(session_id) })
+        self.response = Response(status=200, headers={'Set-Cookie': cookie(session_id) })
         
     def do_delete(self):
         print self.session
 
         if not self.session:
-            self.response = HTTPResponse(status=400)
+            self.response = Response(status=400)
             return
                 
         self.session.delete()
         
-        self.response = HTTPResponse(status=200, headers={'Set-Cookie': cookie() })
+        self.response = Response(status=200, headers={'Set-Cookie': cookie() })

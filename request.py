@@ -1,4 +1,4 @@
-class HTTPRequest(object):
+class Request(object):
     def __init__(self, raw):
         self.raw = raw
         self.method = None

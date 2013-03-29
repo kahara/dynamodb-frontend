@@ -1,4 +1,4 @@
-class HTTPResponse(object):
+class Response(object):
     statuses = {
         'default': '400 Bad Request',
         200: '200 OK',
