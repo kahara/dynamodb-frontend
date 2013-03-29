@@ -11,9 +11,17 @@ class Response(object):
     def __init__(self, version = 'HTTP/1.0', status = None, headers = None, body = None):
         
         self.version = version
+        
         if status and status in self.statuses: self.status = self.statuses[status]
         else: self.status = self.statuses['default']
-        self.headers = headers
+        
+        if headers:
+            self.headers = headers
+        else:
+            self.headers = {}
+        
+        if not 'Content-type' in self.headers:
+            self.headers['Content-type'] = 'application/json'
         if body:
             self.body = body
             self.headers['Content-length'] = len(self.body)
