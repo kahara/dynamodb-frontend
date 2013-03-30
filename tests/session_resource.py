@@ -3,11 +3,10 @@
 import unittest
 import json
 import sys
+import boto.dynamodb
 sys.path.insert(0, '..')
 from request import Request
 from resource import SessionResource
-import boto.dynamodb
-from boto.dynamodb.condition import *
 from auth import generate_key, hash_password
 
 class TestSessionResource(unittest.TestCase):
