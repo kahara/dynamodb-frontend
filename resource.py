@@ -2,10 +2,10 @@ from response import Response
 import boto.dynamodb
 from boto.dynamodb.condition import *
 from auth import generate_key, hash_password, check_password, cookie
-import json
-import sys, traceback
+import json, sys, traceback
 from datetime import datetime
 from time import mktime
+from random import randint
 
 def timestamp():
     return int(mktime(datetime.utcnow().timetuple()))
@@ -29,6 +29,9 @@ class Resource(object):
         if self.request.session_id:
             try:
                 self.session = self.tables['session'].get_item(hash_key=self.request.session_id)
+                if not randint(1, 10) % 10: 
+                    self.session['timestamp'] = timestamp()
+                    self.session.put()
             except:
                 self.response = Response(status=400)
                 return
