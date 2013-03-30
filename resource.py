@@ -106,12 +106,10 @@ class SessionResource(Resource):
         self.response = Response(status=200, headers={'Set-Cookie': cookie(session_id) })
         
     def do_delete(self):
-        print self.session
-
         if not self.session:
             self.response = Response(status=400)
             return
                 
         self.session.delete()
         
-        self.response = Response(status=200, headers={'Set-Cookie': cookie() })
+        self.response = Response(status=204, headers={'Set-Cookie': cookie() })
