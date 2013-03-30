@@ -1,9 +1,6 @@
 #!/usr/bin/env python                                                                                                                                                   
 
-import unittest
-import json
-import sys
-import boto.dynamodb
+import unittest, json, sys, boto.dynamodb
 sys.path.insert(0, '..')
 from request import Request
 from resource import SessionResource
