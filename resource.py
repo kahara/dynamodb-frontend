@@ -19,13 +19,14 @@ class Resource(object):
         self.response = None
         self.session = None
         
+        # set up DynamoDB
         if not self.connection:
-            self.connection =  boto.dynamodb.connect_to_region('eu-west-1')
-        
+            self.connection =  boto.dynamodb.connect_to_region('eu-west-1')        
         if not self.tables:
             for table_name in ['user', 'email', 'username', 'session']:
                 self.tables[table_name] = self.connection.get_table(table_name)
         
+        # fetch session if exists
         if self.request.session_id:
             try:
                 self.session = self.tables['session'].get_item(hash_key=self.request.session_id)
@@ -35,7 +36,8 @@ class Resource(object):
             except:
                 self.response = Response(status=400)
                 return
-
+        
+        # call the requested method
         try:
             getattr(self, {
                     'GET': 'do_get',
@@ -52,15 +54,14 @@ class Resource(object):
 class UserResource(Resource):
     resource_name = 'user'
     
-    def do_get(self):
-        self.response = Response(status=200, headers={'foo': 'bar', 'baz': 'quux'}, body='GET user')
-    
+    # change user's details; for now, only password can be changed
     def do_put(self):
         self.response = Response(status=200, headers={'foo': 'bar', 'baz': 'quux'}, body='POST user')
     
 class SessionResource(Resource):
     resource_name = 'session'
     
+    # return username and email of this session
     def do_get(self):
         try:
             if self.session:
@@ -73,6 +74,7 @@ class SessionResource(Resource):
             self.response = Response(status=400)
             return
 
+    # log in a user, creating a session
     def do_post(self): # log in user
         if self.session: # user already logged in
             self.response = Response(status=400)
@@ -101,13 +103,16 @@ class SessionResource(Resource):
             self.response = Response(status=401)
             return
         
+        # create session
         session_id = generate_key()
         attrs = { 'timestamp': timestamp(), 'user': user['id'], 'email': user['email'], 'username': user['username'] }
         session = self.tables['session'].new_item(hash_key=session_id, attrs=attrs)
         session.put()
         
+        # return session id
         self.response = Response(status=200, headers={'Set-Cookie': cookie(session_id) })
-        
+    
+    # log out, deleting session
     def do_delete(self):
         if not self.session:
             self.response = Response(status=400)
@@ -115,4 +120,5 @@ class SessionResource(Resource):
                 
         self.session.delete()
         
+        # return empty session cookie
         self.response = Response(status=204, headers={'Set-Cookie': cookie() })
