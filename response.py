@@ -2,6 +2,7 @@ class Response(object):
     statuses = {
         'default': '500 Internal Server Error',
         200: '200 OK',
+        201: '201 Created',
         204: '204 No Content',
         400: '400 Bad Request',
         401: '401 Unauthorized',
