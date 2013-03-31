@@ -20,7 +20,7 @@ class TestResource(unittest.TestCase):
         self.resource = Resource(request)
         
     def test_tables(self):
-        for table_name in ['user', 'email', 'username', 'session']:
+        for table_name in ['user', 'email', 'username', 'reset', 'activation', 'session']:
             self.assertEqual(str(self.resource.tables[table_name]), 'Table(%s)' % table_name)
     
 if __name__ == '__main__':
