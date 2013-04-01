@@ -3,7 +3,7 @@
 import unittest, json, sys, boto.dynamodb
 sys.path.insert(0, '..')
 from request import Request
-from resource import SessionResource
+from session_resource import SessionResource
 from auth import generate_key, hash_password
 
 class TestSessionResource(unittest.TestCase):
@@ -52,7 +52,7 @@ class TestSessionResource(unittest.TestCase):
         username_table = connection.get_table('username').get_item(hash_key=self.username).delete()
         email_table = connection.get_table('email').get_item(hash_key=self.email).delete()
         
-    def test_post(self):
+    def test_session(self):
         
         body = json.dumps({'login': self.username, 'password': self.password})
         request = Request('POST /session/ HTTP/1.0\r\nAccept: application/json\r\n\r\n%s' % (body, ))
