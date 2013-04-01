@@ -1,6 +1,7 @@
 from multiprocessing import Queue, current_process
 from request import Request
-from resource import UserResource, SessionResource
+from user_resource import UserResource
+from session_resource import SessionResource
 
 def handler(is_running, request_q, response_q):
     
