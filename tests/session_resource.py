@@ -15,11 +15,12 @@ class TestSessionResource(unittest.TestCase):
         
         connection =  boto.dynamodb.connect_to_region('eu-west-1')
         
-        try: connection.get_table('user').get_item(hash_key=self.userid).delete()
+        try:
+            username_item = connection.get_table('username').get_item(hash_key=self.username)
+            connection.get_table('user').get_item(hash_key=username_item['user']).delete()
+            username_item.delete()
         except: pass
-        try: username_table = connection.get_table('username').get_item(hash_key=self.username).delete()
-        except: pass
-        try: email_table = connection.get_table('email').get_item(hash_key=self.email).delete()
+        try: connection.get_table('email').get_item(hash_key=self.email).delete()
         except: pass
         
         connection.get_table('user').new_item(
