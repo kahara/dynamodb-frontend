@@ -50,3 +50,19 @@ class Resource(object):
             print traceback.format_exception(exc_type, exc_value, exc_traceback)            
             self.response = Response(status=405)
             return
+
+    def do_get(self):
+        self.response = Response(status=400)
+        return
+
+    def do_post(self):
+        self.response = Response(status=400)
+        return
+
+    def do_put(self):
+        self.response = Response(status=400)
+        return
+
+    def do_delete(self):
+        self.response = Response(status=400)
+        return
