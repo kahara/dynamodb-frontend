@@ -20,7 +20,12 @@ def handler(is_running, request_q, response_q):
             
             # process incoming request and generate response
             http_request = Request(request['raw'])
-            resource = resource_map[http_request.path[0]](http_request)
+            
+            if http_request.path and http_request.path[0] in resource_map:
+                resource = resource_map[http_request.path[0]](http_request)
+            else:
+                resource = Resource(http_request)
+                
             response = resource.response.raw()
             
             # send back response
