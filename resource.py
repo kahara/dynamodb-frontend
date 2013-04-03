@@ -23,7 +23,7 @@ class Resource(object):
         if not self.connection:
             self.connection =  boto.dynamodb.connect_to_region('eu-west-1')        
         if not self.tables:
-            for table_name in ['user', 'email', 'username', 'reset', 'activation', 'session']:
+            for table_name in ['user', 'email', 'username', 'reset', 'activation', 'session', 'feed', 'feeditem', 'subscription', 'subscriptionitem']:
                 self.tables[table_name] = self.connection.get_table(table_name)
         
         # fetch session if exists
