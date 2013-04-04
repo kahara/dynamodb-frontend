@@ -10,7 +10,7 @@ if __name__ == '__main__':
     request_q = Queue()
     response_q = Queue()
     
-    request_handlers = [Process(target=handler, args=(is_running, request_q, response_q)) for x in range(10)]
+    request_handlers = [Process(target=handler, args=(is_running, request_q, response_q)) for x in range(3)]
     for x in request_handlers: x.start()
     
     # derived: http://scotdoyle.com/python-epoll-howto.html#async-examples
