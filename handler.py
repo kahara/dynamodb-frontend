@@ -1,5 +1,6 @@
 from multiprocessing import Queue, current_process
 from request import Request
+from resource import Resource
 from user_resource import UserResource
 from session_resource import SessionResource
 
