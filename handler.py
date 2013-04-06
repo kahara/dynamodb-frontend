@@ -3,12 +3,14 @@ from request import Request
 from resource import Resource
 from user_resource import UserResource
 from session_resource import SessionResource
+from tag_resource import TagResource
 
 def handler(is_running, request_q, response_q):
     
     resource_map = {
         'user': UserResource,
         'session': SessionResource,
+        'tag': TagResource,
         }
     
     while True and is_running.value:
