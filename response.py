@@ -1,3 +1,5 @@
+import json
+
 class Response(object):
     statuses = {
         'default': '500 Internal Server Error',
@@ -8,6 +10,7 @@ class Response(object):
         401: '401 Unauthorized',
         403: '403 Forbidden',
         405: '405 Method Not Allowed',
+        500: '500 Internal Server Error',
         }
     
     def __init__(self, version = 'HTTP/1.0', status = None, headers = None, body = None):
@@ -25,7 +28,13 @@ class Response(object):
         if not 'Content-type' in self.headers:
             self.headers['Content-type'] = 'application/json'
         if body:
-            self.body = body
+            
+            try: self.body = json.dumps(body)
+            except:
+                self.body = None
+                self.status = self.statuses[500]
+                return
+            
             self.headers['Content-length'] = len(self.body)
         else:
             self.body = None

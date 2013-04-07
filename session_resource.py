@@ -1,7 +1,7 @@
 import boto.dynamodb
 from boto.dynamodb.condition import *
 from auth import generate_key, check_password, cookie
-import json, sys, traceback
+import sys, traceback
 from resource import Resource, timestamp
 from response import Response
 
@@ -12,7 +12,7 @@ class SessionResource(Resource):
     def do_get(self):
         try:
             if self.session:
-                self.response = Response(status=200, body=json.dumps({'username': self.session['username'], 'email': self.session['email'] }))
+                self.response = Response(status=200, body={'username': self.session['username'], 'email': self.session['email'] })
                 return
             else:
                 self.response = Response(status=401)
@@ -28,7 +28,7 @@ class SessionResource(Resource):
             return
         
         try:
-            credentials = json.loads(self.request.body)
+            credentials = self.request.body
             if not credentials['login'] or not credentials['password']: # malformed credential payload
                 self.response = Response(status=400)
                 return

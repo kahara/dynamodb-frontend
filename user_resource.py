@@ -2,7 +2,7 @@ import boto.dynamodb
 from boto.dynamodb.condition import *
 import boto.ses
 from auth import generate_key, hash_password, check_password
-import json, sys, traceback
+import sys, traceback
 from resource import Resource, timestamp
 from response import Response
 
@@ -31,7 +31,7 @@ class UserResource(Resource):
     def do_put(self):
         try:
             if self.session:
-                body = json.loads(self.request.body)
+                body = self.request.body
                 if not 'password' in body: # malformed payload
                     self.response = Response(status=400)
                     return
@@ -49,7 +49,7 @@ class UserResource(Resource):
     def request_new_account(self):
         # request creation of new user account
         try:
-            body = json.loads(self.request.body)
+            body = self.request.body
 
             try: email_item = self.tables['email'].get_item(hash_key=body['email'])
             except: email_item = None
@@ -125,7 +125,7 @@ class UserResource(Resource):
         # request password reset
         try:
             # create new item in reset table
-            body = json.loads(self.request.body)
+            body = self.request.body
             token = generate_key()
             reset_item = self.tables['reset'].new_item(hash_key=token, attrs={'email': body['email'], 'timestamp': timestamp()})
             reset_item.put()
@@ -154,9 +154,9 @@ class UserResource(Resource):
         # process password reset request
         try:
             token = self.request.path[2]
-            body = json.loads(self.request.body)
+            body = self.request.body
             password = body['password']
-
+            
             reset_item = self.tables['reset'].get_item(hash_key=token)
             if (timestamp() - reset_item['timestamp']) > (15 * 60):
                 self.response = Response(status=400)
