@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import unittest
-import sys
+import sys, json
 sys.path.insert(0, '..')
 from request import Request
 
@@ -25,7 +25,7 @@ class TestRequest(unittest.TestCase):
         self.assertEqual(request.headers['User-Agent'], 'test user agent')
         self.assertEqual(request.headers['Host'], 'testhost.com')
         self.assertEqual(request.headers['Accept'], 'test/mimetype')
-        self.assertEqual(request.body, '')
+        self.assertEqual(request.body, None)
     
     def test_get_invalid(self):
         request = Request('GET ///// HTTP/2.0\r\n\r\ni am the walrus')
@@ -39,12 +39,12 @@ class TestRequest(unittest.TestCase):
         self.assertEqual(request.path, ['foobar', '1234'])
         
     def test_post(self):
-        request = Request(self.request_template % ('POST', '/foobar/', 'HTTP/1.0', 'test request body'))
+        request = Request(self.request_template % ('POST', '/foobar/', 'HTTP/1.0', '["test request body"]'))
         
         self.assertTrue(request.is_valid)
         self.assertEqual(request.method, 'POST')
         self.assertEqual(request.path, ['foobar'])
-        self.assertEqual(request.body, 'test request body')
+        self.assertEqual(request.body, ['test request body'])
     
     def test_delete(self):
         request = Request(self.request_template % ('DELETE', '/foobar/1234/', 'HTTP/1.0', ''))
