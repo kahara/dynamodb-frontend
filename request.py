@@ -1,4 +1,5 @@
 import json
+from striptags import striptags
 
 class Request(object):
     def __init__(self, raw):
@@ -22,7 +23,9 @@ class Request(object):
             
             headers, body = headers.split('\r\n\r\n', 1)
             
-            try: self.body = json.loads(body)
+            try:
+                self.body = striptags(json.loads(body))
+                
             except: pass
             
             for header in headers.split('\r\n'):

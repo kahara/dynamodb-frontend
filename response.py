@@ -1,4 +1,5 @@
 import json
+from striptags import striptags
 
 class Response(object):
     statuses = {
@@ -29,12 +30,12 @@ class Response(object):
             self.headers['Content-type'] = 'application/json'
         if body:
             
-            try: self.body = json.dumps(body)
+            try: self.body = json.dumps(striptags(body))
             except:
                 self.body = None
                 self.status = self.statuses[500]
                 return
-            
+            print self.body
             self.headers['Content-length'] = len(self.body)
         else:
             self.body = None
