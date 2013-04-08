@@ -30,13 +30,23 @@ class TagResource(Resource):
     def get_tag_tree(self, tag=''):
         user = self.session['user']
         
-        data = {}
+        data = {'tags': {}, 'subscriptions': {}}
         try:
-            tags = list(self.tables['tag'].get_item(hash_key=user + ':' + tag)['tags'])
+            item = self.tables['tag'].get_item(hash_key=user + ':' + tag)
+        except:
+            return data
+        
+        try:
+            tags = list(item['tags'])
         except:
             tags = []
         
         for tag in tags:
-            data[tag] = self.get_tag_tree(tag)
+            data['tags'][tag] = self.get_tag_tree(tag)
+        
+        try:
+            data['subscriptions'] = list(item['subscriptions'])
+        except:
+            data['subscriptions'] = []
         
         return data
