@@ -1,11 +1,17 @@
 import boto.dynamodb
 from boto.dynamodb.condition import *
-import json, sys, traceback
+import sys, traceback
 from resource import Resource, timestamp
 from response import Response
 
 class TagResource(Resource):
     resource_name = 'tag'
+    
+    def do_post(self):
+        pass
+    
+    def do_put(self):
+        pass
     
     def do_get(self):
         if not self.session or len(self.request.path) > 2:
@@ -18,7 +24,7 @@ class TagResource(Resource):
         elif len(self.request.path) == 2: # return a branch of tag tree
             tag_tree = self.get_tag_tree(self.request.path[1])
         
-        self.response = Response(status=200, body=json.dumps(tag_tree))
+        self.response = Response(status=200, body=tag_tree)
         return
 
     def get_tag_tree(self, tag=''):
