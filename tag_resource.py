@@ -8,7 +8,46 @@ class TagResource(Resource):
     resource_name = 'tag'
     
     def do_post(self):
-        pass
+        if not self.session or len(self.request.path) > 1:
+            self.response = Response(status=400)
+            return
+        
+        body = self.request.body
+        
+        attrs = {}
+        
+        if 'tag' in body:
+            tag = body['tag']
+        else:
+            self.response = Response(status=400)
+            return
+        
+        if 'tags' in body:
+            attrs['tags'] = set(body['tags'])
+        
+        if 'subscriptions' in body:
+            # XXX look up each subscription ("subscription id:subscription title")
+            attrs['subscriptions'] = set(body['subscriptions'])
+        
+        user = self.session['user']
+        
+        try:
+            tag_item = self.tables['tag'].get_item(hash_key=user + ':' + tag)
+            if tag_item:
+                self.response = Response(status=400)
+                return
+        except:
+            pass
+        
+        try:
+            tag_item = self.tables['tag'].new_item(hash_key=user + ':' + tag, attrs=attrs)
+            tag_item.put()
+        except:
+            self.response = Response(status=400)
+            return
+        
+        self.response = Response(status=201, body=self.get_tag_tree(tag))
+        return
     
     def do_put(self):
         pass
