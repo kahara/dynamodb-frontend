@@ -13,25 +13,15 @@ class TagResource(Resource):
             return
         
         body = self.request.body
-        
-        attrs = {}
-        
+
         if 'tag' in body:
             tag = body['tag']
         else:
             self.response = Response(status=400)
             return
         
-        if 'tags' in body:
-            attrs['tags'] = set(body['tags'])
-        
-        if 'subscriptions' in body:
-            # XXX look up each subscription ("subscription id:subscription title")
-            attrs['subscriptions'] = set(body['subscriptions'])
-        
-        user = self.session['user']
-        
         try:
+            user = self.session['user']
             tag_item = self.tables['tag'].get_item(hash_key=user + ':' + tag)
             if tag_item:
                 self.response = Response(status=400)
@@ -40,6 +30,15 @@ class TagResource(Resource):
             pass
         
         try:
+            attrs = {}
+            
+            if 'tags' in body:
+                attrs['tags'] = set(body['tags'])
+
+            if 'subscriptions' in body:
+                # XXX look up subscriptions ("subscription id:subscription title")
+                attrs['subscriptions'] = set(body['subscriptions'])
+
             tag_item = self.tables['tag'].new_item(hash_key=user + ':' + tag, attrs=attrs)
             tag_item.put()
         except:
@@ -50,8 +49,37 @@ class TagResource(Resource):
         return
     
     def do_put(self):
-        pass
-    
+        if not self.session or len(self.request.path) != 2:
+            self.response = Response(status=400)
+            return
+                
+        try:
+            user = self.session['user']
+            tag = self.request.path[1]
+            
+            tag_item = self.tables['tag'].get_item(hash_key=user + ':' + tag)
+            if not tag_item:
+                self.response = Response(status=400)
+                return
+
+            body = self.request.body
+            
+            if 'tags' in body:
+                tag_item['tags'] = set(body['tags'])
+            
+            if 'subscriptions' in body:
+                # XXX look up subscriptions ("subscription id:subscription title")
+                tag_item['subscriptions'] = set(body['subscriptions'])
+            
+            tag_item.put()
+            
+            self.response = Response(status=200, body={'tags': list(tag_item['tags']), 'subscriptions': list(tag_item['subscriptions'])})
+            return
+        
+        except:
+            self.response = Response(status=400)
+            return
+        
     def do_get(self):
         if not self.session or len(self.request.path) > 2:
             self.response = Response(status=400)
