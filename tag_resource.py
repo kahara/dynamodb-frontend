@@ -79,6 +79,31 @@ class TagResource(Resource):
         except:
             self.response = Response(status=400)
             return
+      
+    def do_delete(self):
+        if not self.session or len(self.request.path) != 2:
+            self.response = Response(status=400)
+            return
+
+        try:
+            user = self.session['user']
+            tag = self.request.path[1]
+
+            tag_item = self.tables['tag'].get_item(hash_key=user + ':' + tag)
+            if not tag_item:
+                self.response = Response(status=400)
+                return
+            
+            tag_item.delete()
+            
+            self.response = Response(status=204)
+            return
+            
+        except:
+            self.response = Response(status=400)
+            return
+        
+        
         
     def do_get(self):
         if not self.session or len(self.request.path) > 2:
