@@ -1,4 +1,5 @@
 import json
+from urllib2 import unquote
 from striptags import striptags
 
 class Request(object):
@@ -19,13 +20,13 @@ class Request(object):
             request_line, headers = self.raw.split('\r\n', 1)
             
             self.method, self.path, self.version = request_line.split(' ', 2)
-            self.path = [x for x in self.path.split('/') if x]        
+            self.path = [unquote(x) for x in self.path.split('/') if x]        
             
             headers, body = headers.split('\r\n\r\n', 1)
             
             try:
                 self.body = striptags(json.loads(body))
-                
+
             except: pass
             
             for header in headers.split('\r\n'):
@@ -38,5 +39,6 @@ class Request(object):
                     self.session_id = value
             
             self.is_valid = True
+
         except:
             self.is_valid = False
