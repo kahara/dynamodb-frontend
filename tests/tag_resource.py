@@ -13,6 +13,7 @@ class TestTagResource(unittest.TestCase):
         self.username = 'thisisatestuser'
         self.email = 'thisisatestemail@example.com'
         self.password = 'thisisatestpassword'
+        self.session_id = None
         
         connection =  boto.dynamodb.connect_to_region('eu-west-1')
         
@@ -48,44 +49,44 @@ class TestTagResource(unittest.TestCase):
                 }
             ).put()
         
-    def tearDown(self):
-        connection =  boto.dynamodb.connect_to_region('eu-west-1')
+        body = json.dumps({'login': self.username, 'password': self.password})
+        request = Request('POST /session/ HTTP/1.0\r\nAccept: application/json\r\n\r\n%s' % (body, ))
+        resource = SessionResource(request)
+        self.session_id = resource.response.headers['Set-Cookie'].split(' ')[0]
         
+    def tearDown(self):
+        request = Request('DELETE /session/ HTTP/1.0\r\nAccept: application/json\r\nCookie: %s\r\n\r\n' % (self.session_id, ))
+        resource = TagResource(request)
+        
+        connection =  boto.dynamodb.connect_to_region('eu-west-1')        
         connection.get_table('user').get_item(hash_key=self.userid).delete()
         connection.get_table('username').get_item(hash_key=self.username).delete()
         connection.get_table('email').get_item(hash_key=self.email).delete()
 
     def test_tag(self):
-        body = json.dumps({'login': self.username, 'password': self.password})
-        request = Request('POST /session/ HTTP/1.0\r\nAccept: application/json\r\n\r\n%s' % (body, ))
-        resource = SessionResource(request)
-        session_id = resource.response.headers['Set-Cookie'].split(' ')[0]
         
         body = json.dumps({'tag': 'test tag', 'tags': ['foo', 'bar'], 'subscriptions': ['1234']})
-        request = Request('POST /tag/ HTTP/1.0\r\nAccept: application/json\r\nCookie: %s\r\n\r\n%s' % (session_id, body))
+        request = Request('POST /tag/ HTTP/1.0\r\nAccept: application/json\r\nCookie: %s\r\n\r\n%s' % (self.session_id, body))
         resource = TagResource(request)
         
         expected = '{"tags": {"foo": {"tags": {}, "subscriptions": {}}, "bar": {"tags": {}, "subscriptions": {}}}, "subscriptions": ["1234"]}'
         
         self.assertEqual(resource.response.body, expected)
         
-        request = Request('GET /tag/test%%20tag HTTP/1.0\r\nAccept: application/json\r\nCookie: %s\r\n\r\n' % (session_id, ))
+        request = Request('GET /tag/test%%20tag HTTP/1.0\r\nAccept: application/json\r\nCookie: %s\r\n\r\n' % (self.session_id, ))
         resource = TagResource(request)
         
         self.assertEqual(resource.response.body, expected)
         
-        request = Request('DELETE /tag/test%%20tag HTTP/1.0\r\nAccept: application/json\r\nCookie: %s\r\n\r\n' % (session_id, ))
+        request = Request('DELETE /tag/test%%20tag HTTP/1.0\r\nAccept: application/json\r\nCookie: %s\r\n\r\n' % (self.session_id, ))
         resource = TagResource(request)
         
         print resource.response.status
         
-        request = Request('GET /tag/test%%20tag HTTP/1.0\r\nAccept: application/json\r\nCookie: %s\r\n\r\n' % (session_id, ))
+        request = Request('GET /tag/test%%20tag HTTP/1.0\r\nAccept: application/json\r\nCookie: %s\r\n\r\n' % (self.session_id, ))
         resource = TagResource(request)
         
         self.assertEqual(resource.response.status, '400 Bad Request')
-        
-        request = Request('DELETE /session/ HTTP/1.0\r\nAccept: application/json\r\nCookie: %s\r\n\r\n' % (session_id, ))
-        resource = TagResource(request)
         
 if __name__ == '__main__':
     unittest.main()
