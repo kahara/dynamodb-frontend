@@ -11,15 +11,15 @@ class TagResource(Resource):
         if not self.session or len(self.request.path) > 1:
             self.response = Response(status=400)
             return
-        
+
         body = self.request.body
 
         if 'tag' in body:
             tag = body['tag']
-        else:
+        else:        
             self.response = Response(status=400)
             return
-        
+
         try:
             user = self.session['user']
             tag_item = self.tables['tag'].get_item(hash_key=user + ':' + tag)
@@ -41,6 +41,7 @@ class TagResource(Resource):
 
             tag_item = self.tables['tag'].new_item(hash_key=user + ':' + tag, attrs=attrs)
             tag_item.put()
+            
         except:
             self.response = Response(status=400)
             return
@@ -88,7 +89,7 @@ class TagResource(Resource):
         try:
             user = self.session['user']
             tag = self.request.path[1]
-
+            
             tag_item = self.tables['tag'].get_item(hash_key=user + ':' + tag)
             if not tag_item:
                 self.response = Response(status=400)
@@ -116,17 +117,23 @@ class TagResource(Resource):
         elif len(self.request.path) == 2: # return a branch of tag tree
             tag_tree = self.get_tag_tree(self.request.path[1])
         
+        if not tag_tree:
+            self.response = Response(status=400)
+            return
+        
         self.response = Response(status=200, body=tag_tree)
         return
 
     def get_tag_tree(self, tag=''):
         user = self.session['user']
         
+        # XXX detect circular references
+        
         data = {'tags': {}, 'subscriptions': {}}
         try:
             item = self.tables['tag'].get_item(hash_key=user + ':' + tag)
         except:
-            return data
+            return None
         
         try:
             tags = list(item['tags'])
