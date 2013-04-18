@@ -61,7 +61,14 @@ class TestBase(unittest.TestCase):
     def tearDown(self):
         connection =  boto.dynamodb.connect_to_region('eu-west-1')
         
-        connection.get_table('session').get_item(hash_key=self.sessionid).delete()
-        connection.get_table('user').get_item(hash_key=self.userid).delete()
-        connection.get_table('username').get_item(hash_key=self.username).delete()
-        connection.get_table('email').get_item(hash_key=self.email).delete()
+        try: connection.get_table('session').get_item(hash_key=self.sessionid).delete()
+        except: pass
+        
+        try: connection.get_table('user').get_item(hash_key=self.userid).delete()
+        except: pass
+        
+        try: connection.get_table('username').get_item(hash_key=self.username).delete()
+        except: pass
+        
+        try: connection.get_table('email').get_item(hash_key=self.email).delete()
+        except: pass
