@@ -29,13 +29,11 @@ class Response(object):
         if not 'Content-type' in self.headers:
             self.headers['Content-type'] = 'application/json'
         if body:
-            
             try: self.body = json.dumps(striptags(body))
             except:
                 self.body = None
                 self.status = self.statuses[500]
                 return
-            print self.body
             self.headers['Content-length'] = len(self.body)
         else:
             self.body = None

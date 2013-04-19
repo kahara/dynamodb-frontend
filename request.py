@@ -32,12 +32,12 @@ class Request(object):
             for header in headers.split('\r\n'):
                 key, value = header.split(':', 1)
                 self.headers[key.strip()] = value.strip()
-            
+
             if 'Cookie' in self.headers:
                 key, value = self.headers['Cookie'].split(';')[0].split('=')
                 if key == 'session_id' and value:
                     self.session_id = value
-            
+                    
             self.is_valid = True
 
         except:
