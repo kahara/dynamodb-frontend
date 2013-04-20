@@ -9,12 +9,10 @@ from tag_resource import TagResource
 class TestTagResource(TestBase):
     def tearDown(self):
         super(TestBase, self).tearDown()
-        
-        connection =  boto.dynamodb.connect_to_region('eu-west-1')
-        
-        try: connection.get_table('tag').get_item(hash_key=self.user + ':' + 'test tag').delete()
+
+        try: self.connection.get_table('tag').get_item(hash_key=self.user + ':' + 'test tag').delete()
         except: pass
-        try: connection.get_table('tag').get_item(hash_key=self.user + ':' + 'bar').delete()
+        try: self.connection.get_table('tag').get_item(hash_key=self.user + ':' + 'bar').delete()
         except: pass
         
     def test_tag(self):
