@@ -1,4 +1,4 @@
-#!/usr/bin/env python                                                                                                                                                   
+#!/usr/bin/env python
 
 import unittest, json, sys, boto.dynamodb
 from boto.dynamodb.condition import *
